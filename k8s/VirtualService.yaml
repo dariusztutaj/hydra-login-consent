@@ -9,7 +9,7 @@ spec:
   gateways:
   - kyma-system/kyma-gateway
   hosts:
-  - ory-hydra-login-consent.tsm01.goatz.shoot.canary.k8s-hana.ondemand.com
+  - ory-hydra-login-consent.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com
   http:
   - match:
     - uri:
