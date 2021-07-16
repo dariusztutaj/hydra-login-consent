@@ -1,6 +1,6 @@
 # Remove dependency to dex, apiserver-proxy and iam-kubeconfig service from cluster-user tests POC
 
-## Overview
+## Overview.
 
 In Kyma 1.x we use dex, apiserver-proxy and iam-kubeconfig to provide support for OIDC-based user authentication.  
 Dex is issuing tokens and apiserver-proxy is the primary "consumer" of api requests authenticated with Dex-issued tokens.  
@@ -8,7 +8,8 @@ Apiserver-proxy verifies the tokens and then forwards the requests to the real K
 In this way we avoid troubles of configuring K8s API server with OIDC parameters like trusted issuer and related SSL/TLS certificate trust issues, especially with self-signed certificates.  
 In Kyma 2.0 we want to get rid of Dex, Apiserver-proxy and Iam-kubeconfig service.
 
-## The plan
+## The plan.
+
 In Kyma 2.0 we have to face the challenges with configuring K8s API Server with OIDC settings, so that the API Server itself will verify the OIDC tokens and extract subject/group information from these tokens.  
 There are three challenges here:  
 1) Finding an easy to integrate OIDC provider to use with `cluster-user-tests`
@@ -18,13 +19,14 @@ There are three challenges here:
 This project, and this document is created to solve problem 1.  
 Other two problems remain to be fixed.
 
-## The solution
+## The solution.
 
 Finding OIDC provider to use is simple: we already have it. It's ORY/Hydra server. We only have to configure it so that we have:
 - a set of static users for testing purpose
 - ability to embed custom claims in issued OIDC tokens
 
-### The details
+### The details.
+
 Hydra is certified OIDC provider. But Hydra is **not** an Identity provider. It means Hydra doesn't have any user database. You can't configure Hydra with static users either. You have to *integrate* Hydra with some external user-database to have such features.  
 Hydra offers well-defined *extension points* that allow you to integrate external *ID provider* with OIDC flows.  
 Fortunately, ORY provides a sample/demo application that serves as an example of how one can implement the *extension points*.  
@@ -35,7 +37,7 @@ Take a look at the commit history: the first commit contains the ORY codebase fr
 I've introduced static users along with passwords and group mapping.  
 Code for configuring custom claims in OIDC token is also present, take a look how `email` claim is added (`src/routes/consent.ts`)
 
-## Installation steps
+## Installation steps.
 
 Assumption: Kyma 2.x is installed along with ORY component
 Expected result: Hydra-login-consent-app is installed and integrated with Hydra. OIDC flow for static users is possible, proper token in JWT format with expected claims can be acquired using a web browser. All requests are using public Kyma domain name and the Kyma TLS certificate.
@@ -105,4 +107,10 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
     - On success you are redirected to `http://testclient3.example.com/#id_token=eyJhbG...` It's a non-existing URL - don't worry, we don't need it really.
     - Copy the id_token value
     - You can decode the value using `https://jwt.io/` to ensure all necessary fields have proper values.
+ 
+## Useful resources.
+
+- OpenID Connect configuration endpoint.  
+  This endpoint returns all public informations about OIDC configuration, including all public URLs used for interaction with OIDC provider:  
   
+      curl "https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/.well-known/openid-configuration" &#124; jq
