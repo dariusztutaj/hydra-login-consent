@@ -76,16 +76,16 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
     Replace or add the following environment variables into your Hydra Deployment - **remember to change the domain name!**
     The LOG_LEAK_SENSITIVE_VALUES is not necessary, it increases Hydra error logging verbosity
     
-        - name: LOG_LEAK_SENSITIVE_VALUES
-          value: "true"
-        - name: URLS_LOGIN
-          value: https://ory-hydra-login-consent.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/login
-        - name: URLS_CONSENT
-          value: https://ory-hydra-login-consent.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/consent
-        - name: URLS_SELF_ISSUER
-          value: https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/
-        - name: URLS_SELF_PUBLIC
-          value: https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/
+       - name: LOG_LEAK_SENSITIVE_VALUES
+         value: "true"
+       - name: URLS_LOGIN
+         value: https://ory-hydra-login-consent.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/login
+       - name: URLS_CONSENT
+         value: https://ory-hydra-login-consent.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/consent
+       - name: URLS_SELF_ISSUER
+         value: https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/
+       - name: URLS_SELF_PUBLIC
+         value: https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/
 
 
 6) Prepare OIDC request
@@ -96,7 +96,7 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
 
     You can also change the `state` and `nonce` if you wish, the only requirement for these values is that they should be "random", have high entropy.
 
-            https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/oauth2/auth?client_id=22a0d842-a62f-4fe4-8a28-99ed893784e7&response_type=id_token&scope=openid&redirect_uri=http://testclient3.example.com&state=dd3557bfb07ee1858f0ac8abc4a46aef&nonce=lubiesecurityskany
+       https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/oauth2/auth?client_id=22a0d842-a62f-4fe4-8a28-99ed893784e7&response_type=id_token&scope=openid&redirect_uri=http://testclient3.example.com&state=dd3557bfb07ee1858f0ac8abc4a46aef&nonce=lubiesecurityskany
 
 7) Paste the URL in the browser. 
     - Login using credentials found in `src/routes/login.ts`, function: `authenticate`
