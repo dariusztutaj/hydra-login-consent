@@ -49,7 +49,7 @@ router.get('/', csrfProtection, (req, res, next) => {
               // unless you limit who can introspect tokens.
               // accessToken: { foo: 'bar' },
               // This data will be available in the ID token.
-              // idToken: { baz: 'bar' },
+              //id_token: { baz: 'bar' },
             }
           })
           .then(({ data: body }) => {
@@ -113,7 +113,7 @@ router.post('/', csrfProtection, (req, res, next) => {
 
     // This data will be available in the ID token.
     id_token: {
-      // baz: 'bar'
+      groups: [],
     }
   }
 
@@ -129,6 +129,12 @@ router.post('/', csrfProtection, (req, res, next) => {
     .getConsentRequest(challenge)
     // This will be called if the HTTP request was successful
     .then(({ data: body }) => {
+
+      const id_token = session.id_token as any
+      const userData = (body.context as any).userData as any
+      id_token.email = userData.email
+      id_token.groups = userData.groups
+ 
       return hydraAdmin
         .acceptConsentRequest(challenge, {
           // We can grant all scopes that have been requested - hydra already checked for us that no additional scopes

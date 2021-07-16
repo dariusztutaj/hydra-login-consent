@@ -9,6 +9,40 @@ import { oidcConformityMaybeFakeAcr } from './stub/oidc-cert'
 const csrfProtection = csrf({ cookie: true })
 const router = express.Router()
 
+type UserData = {
+  email: string;
+  groups: string[];
+}
+
+//Here you define static users, their passwords and group mapping
+function authenticate(email: string, password: string): UserData {
+  if (email === 'foo@bar.com' && password === 'foobar') {
+    return {
+      email: email,
+      groups: ['anonymous'],
+    }
+  }
+  if (email === 'user@kyma.cx' && password === '-=[]') {
+    return {
+      email: email,
+      groups: ['users'],
+    }
+  }
+  if (email === 'nsdeveloper@kyma.cx' && password === 'abcd') {
+    return {
+      email: email,
+      groups: ['developers', 'users', 'goatz'],
+    }
+  }
+  if (email === 'admin@kyma.cx' && password === '1234') {
+    return {
+      email: email,
+      groups: ['admins', 'developers', 'users', 'goatz'],
+    }
+  }
+  return null as any;
+}
+
 router.get('/', csrfProtection, (req, res, next) => {
   // Parses the URL query
   const query = url.parse(req.url, true).query
@@ -76,9 +110,11 @@ router.post('/', csrfProtection, (req, res, next) => {
     )
   }
 
+  const userData = authenticate(req.body.email, req.body.password)
+
   // Let's check if the user provided valid credentials. Of course, you'd use a database or some third-party service
   // for this!
-  if (!(req.body.email === 'foo@bar.com' && req.body.password === 'foobar')) {
+  if (!userData) {
     // Looks like the user provided invalid credentials, let's show the ui again...
 
     res.render('login', {
@@ -94,11 +130,15 @@ router.post('/', csrfProtection, (req, res, next) => {
 
   hydraAdmin
     .getLoginRequest(challenge)
-    .then(({ data: loginRequest }) =>
-      hydraAdmin
+    .then(({ data: loginRequest }) => {
+      return hydraAdmin
         .acceptLoginRequest(challenge, {
           // Subject is an alias for user ID. A subject can be a random string, a UUID, an email address, ....
-          subject: 'foo@bar.com',
+          subject: userData.email,
+
+          context: {
+            userData: userData,
+          },
 
           // This tells hydra to remember the browser and automatically authenticate the user in future requests. This will
           // set the "skip" parameter in the other route to true on subsequent requests!
@@ -121,9 +161,9 @@ router.post('/', csrfProtection, (req, res, next) => {
         })
         .then(({ data: body }) => {
           // All we need to do now is to redirect the user back to hydra!
-          res.redirect(String(body.redirect_to))
+          return res.redirect(String(body.redirect_to))
         })
-    )
+    })
     // This will handle any error that happens when making HTTP calls to hydra
     .catch(next)
 
