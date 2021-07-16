@@ -27,12 +27,13 @@ Finding OIDC provider to use is simple: we already have it. It's ORY/Hydra serve
 ### The details
 Hydra is certified OIDC provider. But Hydra is **not** an Identity provider. It means Hydra doesn't have any user database. You can't configure Hydra with static users either. You have to *integrate* Hydra with some external user-database to have such features.  
 Hydra offers well-defined *extension points* that allow you to integrate external *ID provider* with OIDC flows.  
-Fortunately, ORY provides a sample, demo application that serves as an example of how one can implement the *extension points*.  
-This project contains this application with small changes necessary to implement our scenario.  
-The application is written in Typescript, and the changes are really small.  
-Take a look at the commit history: the first commit contains the ORY code, version: `v1.10.3`, next commits are my changes.  
+Fortunately, ORY provides a sample/demo application that serves as an example of how one can implement the *extension points*.  
+
+This project contains a version of this sample application with small changes necessary to implement our scenario.  
+The application is written in Typescript, and the changes are really, really small.  
+Take a look at the commit history: the first commit contains the ORY codebase from version: `v1.10.3`, the next commits are my changes.  
 I've introduced static users along with passwords and group mapping.  
-Code for configuring custom claims in OIDC token is also present, take a look how `email` claim is added (src/routes/consent.ts)
+Code for configuring custom claims in OIDC token is also present, take a look how `email` claim is added (`src/routes/consent.ts`)
 
 ## Installation steps
 
@@ -60,7 +61,7 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
        ory-hydra-login-consent-676f9c854b-5b6rf   2/2         Running     0                  4m46
       
   
-   Generated client_id:
+   Generated client_id (necessary in the further steps!):
    
     
        % kubectl -n kyma-system get secret testclient3 -o jsonpath='{.data.client_id}' | base64 -D
@@ -91,14 +92,17 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
 
     Replace values for:
       - domain name
-      - client_id
+      - client_id (you should have this value in step 4.)
+
+    You can also change the `state` and `nonce` if you wish, the only requirement for these values is that they should be "random", have high entropy.
 
             https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/oauth2/auth?client_id=22a0d842-a62f-4fe4-8a28-99ed893784e7&response_type=id_token&scope=openid&redirect_uri=http://testclient3.example.com&state=dd3557bfb07ee1858f0ac8abc4a46aef&nonce=lubiesecurityskany
 
 7) Paste the URL in the browser. 
     - Login using credentials found in `src/routes/login.ts`, function: `authenticate`
-    - On consent screen select `openid` and confirm with `Allow`
-    - On success you are redirected to `http://testclient3.example.com/#id_token=eyJhbG...` (non-existing URL - don't worry)
+    - On consent screen select `openid` and confirm with `Allow access`
+    - It might take a few seconds, be patient...
+    - On success you are redirected to `http://testclient3.example.com/#id_token=eyJhbG...` It's a non-existing URL - don't worry, we don't need it really.
     - Copy the id_token value
     - You can decode the value using `https://jwt.io/` to ensure all necessary fields have proper values.
   
