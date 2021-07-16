@@ -113,4 +113,4 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
 - OpenID Connect configuration endpoint.  
   This endpoint returns all public informations about OIDC configuration, including all public URLs used for interaction with OIDC provider:  
   
-      curl "https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/.well-known/openid-configuration" &#124; jq
+      curl "https://oauth2.piotr-cstr-usrs.goatz.shoot.canary.k8s-hana.ondemand.com/.well-known/openid-configuration" | jq
