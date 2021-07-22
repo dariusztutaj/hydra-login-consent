@@ -107,6 +107,26 @@ Expected result: Hydra-login-consent-app is installed and integrated with Hydra.
     - On success you are redirected to `http://testclient3.example.com/#id_token=eyJhbG...` It's a non-existing URL - don't worry, we don't need it really.
     - Copy the id_token value
     - You can decode the value using `https://jwt.io/` to ensure all necessary fields have proper values.
+
+### Configuring minikube with OIDC.
+After Hydra is setup and OIDC workflow works it's time to configure apiserver to work with OIDC provider. Step 2 and 3 from **The plan**. The following command will reconfigure exisitng cluster with oidc configurations:
+```
+minikube start --extra-config=apiserver.authorization-mode=RBAC \                                                  
+--extra-config=apiserver.oidc-issuer-url=https://oauth2.kyma.example.com/ \
+--extra-config=apiserver.oidc-username-claim=email \
+--extra-config=apiserver.oidc-client-id=5f2d0e28-57ba-4f1a-ab19-553c3cfc72ae \ # this needs to be updated from 
+--embed-certs # this injects certs, more info: https://minikube.sigs.k8s.io/docs/handbook/untrusted_certs/
+```
+There is still proble because `apiserver` cannot resolve properly oidc endpoint:
+```
+E0722 23:38:36.885803       1 oidc.go:232] oidc authenticator: initializing plugin: Get https://oauth2.kyma.example.com/.well-known/openid-configuration: dial tcp 10.98.50.139:443: connect: connection refused
+```
+since it is not using kube-dns. One can manually add proper nameserver to minikube node after `minikube ssh` and after this OIDC endpoint can be discovered without SSL problems.
+```
+$ curl https://oauth2.kyma.example.com/.well-known/openid-configuration
+{"issuer":"https://oauth2.kyma.example.com/","authorization_endpoint":"https://oauth2.kyma.example.com/oauth2/auth","token_endpoint":"https://oauth2.kyma.example.com/oauth2/token","jwks_uri":"https://oauth2.kyma.example.com/.well-known/jwks.json","subject_types_supported":["public"],"response_types_supported":["code","code id_token","id_token","token id_token","token","token id_token code"],"claims_supported":["sub"],"grant_types_supported":["authorization_code","implicit","client_credentials","refresh_token"],"response_modes_supported":["query","fragment"],"userinfo_endpoint":"https://oauth2.kyma.example.com/userinfo","scopes_supported":["offline_access","offline","openid"],"token_endpoint_auth_methods_supported":["client_secret_post","client_secret_basic","private_key_jwt","none"],"userinfo_signing_alg_values_supported":["none","RS256"],"id_token_signing_alg_values_supported":["RS256"],"request_parameter_supported":true,"request_uri_parameter_supported":true,"require_request_uri_registration":true,"claims_parameter_supported":false,"revocation_endpoint":"https://oauth2.kyma.example.com/oauth2/revoke","backchannel_logout_supported":true,"backchannel_logout_session_supported":true,"frontchannel_logout_supported":true,"frontchannel_logout_session_supported":true,"end_session_endpoint":"https://oauth2.kyma.example.com/oauth2/sessions/logout
+```
+
  
 ## Useful resources.
 
