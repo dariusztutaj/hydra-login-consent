@@ -43,7 +43,7 @@ echo ${IP} oauth2.kyma.example.com kyma.example.com ory-hydra-login-consent.kyma
 ```
 curl --insecure https://oauth2.kyma.example.com/.well-known/openid-configuration
 ```
-`--insecure` flag is needed since you probably don't have ingress gateway cert in trusted store. The cmd above should return json with oauth endpoint details.
+`--insecure` flag is there since you probably don't have ingress' gateway cert in trusted store. The cmd above should return json with oauth endpoint details.
 
 9. Get cert of ingress gateway:
 ```
@@ -56,9 +56,9 @@ minikube start --embed-certs=true
 ```
 after that the certificate can be find in `/usr/share/ca-certificates` and whey trying to access oauth endpoint from minikube does not throw an error.
 **Note**: Use the ingress gw IP from step 6.
+**Note**: This step is needed in order to `kube-apiserver` be able to resolve issuer dns names.
 ```
-minikube ssh
-echo ${IP} oauth2.kyma.example.com kyma.example.com ory-hydra-login-consent.kyma.example.com | sudo tee -a /etc/hosts
+minikube ssh "echo ${IP} oauth2.kyma.example.com kyma.example.com ory-hydra-login-consent.kyma.example.com | sudo tee -a /etc/hosts"
 ```
 
 10. Redeploy the cluster to use OIDC.
@@ -117,7 +117,10 @@ OIDC_CLIENT_ID=$(kubectl -n kyma-system get secret testclient3 -o jsonpath='{.da
 ```
 Go to url:
 `firefox https://oauth2.kyma.example.com/oauth2/auth?client_id=${OIDC_CLIENT_ID}&response_type=id_token&scope=openid&redirect_uri=http://testclient3.example.com&state=dd3557bfb07ee1858f0ac8abc4a46aef&nonce=lubiesecurityskany`
-After login you get redirect to testclient3, which does not exist but we need only JWT that is in the redirect URI. Save that for another step.
+
+**TODO:** There is potential problem with jwt expiration if we don't provide refresh token. `response_type=code+id_token` should provide the refresh_token as well as the id_token. Update: this does not work: `unsupported_response_type&error_description=The+authorization+server+does+not+support+obtaining+a+token+using+this+method%0A%0AThe+client+is+not+allowed+to+request+response_type+"code+id_token".&error_hint=The+client+is+not+allowed+to+request+response_type+"code+id_token".&state=dd3557bfb07ee1858f0ac8abc4a46aef`
+
+After login, you get redirect to testclient3, which does not exist, but we need only JWT that is in the redirect URI. Save that for another step.
 ### Configure kubectl to work with OIDC
 
 ```bash
@@ -136,3 +139,5 @@ kubectl config set-credentials admin@kyma.cx \
    --auth-provider-arg=client-id=${OIDC_CLIENT_ID} \
    --auth-provider-arg=id-token=${TOKEN}
 ```
+
+**TODO**: resolve CSRF issues.
