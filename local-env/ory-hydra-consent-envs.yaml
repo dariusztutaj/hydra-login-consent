@@ -1,0 +1,10 @@
+        - name: LOG_LEAK_SENSITIVE_VALUES
+          value: "true"
+        - name: URLS_LOGIN
+          value: https://ory-hydra-login-consent.kyma.example.com/login
+        - name: URLS_CONSENT
+          value: https://ory-hydra-login-consent.kyma.example.com/consent
+        - name: URLS_SELF_ISSUER
+          value: https://oauth2.kyma.example.com/
+        - name: URLS_SELF_PUBLIC
+          value: https://oauth2.kyma.example.com/
