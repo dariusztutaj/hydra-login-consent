@@ -6,7 +6,7 @@ import { hydraAdmin } from '../config'
 import { oidcConformityMaybeFakeAcr } from './stub/oidc-cert'
 
 // Sets up csrf protection
-const csrfProtection = csrf({ cookie: true })
+const csrfProtection = csrf({ cookie: true, ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'POST']})
 const router = express.Router()
 
 type UserData = {

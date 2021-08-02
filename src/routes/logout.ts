@@ -5,7 +5,7 @@ import csrf from 'csurf'
 import { hydraAdmin } from '../config'
 
 // Sets up csrf protection
-const csrfProtection = csrf({ cookie: true })
+const csrfProtection = csrf({ cookie: true, ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'POST'] })
 const router = express.Router()
 
 router.get('/', csrfProtection, (req, res, next) => {
