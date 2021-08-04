@@ -12,21 +12,9 @@ kyma alpha deploy --components-file ./components.yaml
 ```
 kubectl apply -f k8s-minikube
 ```
-4. Edit `ory-hydra` deployement and add envs to point to consent endpoints:
-```
-kubectl -n kyma-system edit deployment ory-hydra
-```
-```yaml
-        - name: LOG_LEAK_SENSITIVE_VALUES
-          value: "true"
-        - name: URLS_LOGIN
-          value: https://ory-hydra-login-consent.kyma.example.com/login
-        - name: URLS_CONSENT
-          value: https://ory-hydra-login-consent.kyma.example.com/consent
-        - name: URLS_SELF_ISSUER
-          value: https://oauth2.kyma.example.com/
-        - name: URLS_SELF_PUBLIC
-          value: https://oauth2.kyma.example.com/
+4. Change env vars of `ory-hydra` deployement
+```bash
+./k8s-minikube/ory-hydra-change-envs-and-restart.sh
 ```
 5. In another terminal run `minikube tunnel` to create tunnel to `LoadBalancer` type services.
 
@@ -124,9 +112,9 @@ After login, you get redirect to testclient3, which does not exist, but we need 
 ### Configure kubectl to work with OIDC
 
 ```bash
-function oidc_curl_jq() {
+`function oidc_curl_jq() {
     curl --insecure https://oauth2.kyma.example.com/.well-known/openid-configuration | jq $1 | tr -d '"'
-}
+}`
 ISSUER_URL=$(oidc_curl_jq ".issuer")
 OIDC_CLIENT_ID=$(kubectl -n kyma-system get secret testclient3 -o jsonpath='{.data.client_id}' | base64 -d)
 TOKEN="eyJhbGciOiJSUzI1NiIsImtpZCI6InB1YmxpYzo4NDNiNDM0OC1jNjg3LTRjODItOWYxMS04NWY3N2FlZTRlYWIiLCJ0eXAiOiJKV1QifQ.eyJhY3IiOiIwIiwiYXVkIjpbIjc5YjE4YWY1LWVmOGUtNDlmNC1hZGI2LTFmNGEwMzI2ZDM3NyJdLCJhdXRoX3RpbWUiOjE2Mjc0ODYwNDcsImVtYWlsIjoiYWRtaW5Aa3ltYS5jeCIsImV4cCI6MTYyNzQ4OTY1MSwiZ3JvdXBzIjpbImFkbWlucyIsImRldmVsb3BlcnMiLCJ1c2VycyIsImdvYXR6Il0sImlhdCI6MTYyNzQ4NjA1MSwiaXNzIjoiaHR0cHM6Ly9vYXV0aDIua3ltYS5leGFtcGxlLmNvbS8iLCJqdGkiOiI1NjMwZTIxZS05YWQzLTQwOGYtYmNmMC1jNTg3YzQ0MTRjNDAiLCJub25jZSI6Imx1Ymllc2VjdXJpdHlza2FueSIsInJhdCI6MTYyNzQ4NTY3NCwic2lkIjoiMDNhYTdhY2EtYjY0NS00MTllLTk4OGYtYzA4N2JlMGZjNTkxIiwic3ViIjoiYWRtaW5Aa3ltYS5jeCJ9.Xg-Aca-IteYbEQTuvr6WXCz1VhYlhDuJLvLtr13q1j0_GRjBtdglIZwFFnd7NohiMG9tkF1G7RrrtaNv1t_wXzHmp2vEczsS1HvXJUZKSdHHPD2U2yxy7h5nlp-zt9VLtsMckrct2xPwGa-GtsDmiYLBJVNyNaMKr7wBv4agmb1pPIldg9QMOFEkAx4SO9-eN4BpG6k-NmAdeRWbbn6WSFXi_c5nvxkOYcw5EJNAH64cbi75mzvaderjZx0BD8hXnKyn001p8yKriFtFmCUbW6_50w_t8Zaz-dM4JbkTE2_zHvCRD77tTxkqwiKwQYxI0tfTIFl7myyP3MMIF9MW8To-9LL05Rc3YWUu_sbHbtLxEypVkF1Qyz6dxYezf6gH8jacUqtdLqv_l5v4U6SoxLbQfKmArX4yfMhjPkKLmMcCrzaOF7-2k6Y2R31HhshtogftBV6ehtkGmp5Z8PFf_Gr4WGMSQVbGZANuP6hR--ZxD2lwus7VP4j7VYGigmHRuAqTb6AJkN4TP0LQsb8ADpIBwFy1XjXLaApRvoTsbDIJe1W0xiyVS0y037z46lp3jCiCHKM0ikY4xpWHvXgIrAd1Yk-HvECFzuwvQvcC9nYALHM-ZtW1LzySmcggVvR8SfM4J79GWz3TKXtkE7vT5FzkaGWT5XEqaT3vaDQl0Ns"
