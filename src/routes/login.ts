@@ -11,7 +11,6 @@ const router = express.Router()
 
 type UserData = {
     email: string;
-    groups: string[];
 }
 
 //Here you define static users, their passwords and group mapping
@@ -25,37 +24,31 @@ function authenticate(email: string, password: string): UserData {
     if (email === 'foo@bar.com' && password === 'foobar') {
         return {
             email: email,
-            groups: ['anonymous'],
         }
     }
     if (email === readOnlyUserEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['users'],
         }
     }
     if (email === developerEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['developers', 'users'],
         }
     }
     if (email === noRightsUserEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['users'],
         }
     }
     if (email === namespaceAdminEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['users'],
         }
     }
     if (email === adminEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['admins', 'developers', 'users'],
         }
     }
     return null as any;
