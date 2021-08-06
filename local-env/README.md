@@ -63,6 +63,7 @@ minikube start --extra-config=apiserver.authorization-mode=RBAC \
 --extra-config=apiserver.oidc-issuer-url=https://oauth2.kyma.example.com/ \
 --extra-config=apiserver.oidc-username-claim=email \
 --extra-config=apiserver.oidc-client-id=${OIDC_CLIENT_ID} \
+--extra-config=apiserver.v=9 \
 --embed-certs=true
 😄  minikube v1.22.0 on Fedora 33
 🆕  Kubernetes 1.21.2 is now available. If you would like to upgrade, specify: --kubernetes-version=v1.21.2
