@@ -37,7 +37,7 @@ function authenticate(email: string, password: string): UserData {
     if (email === developerEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['developers', 'users'],
+            groups: ['runtimeDeveloper'],
         }
     }
     if (email === noRightsUserEmail && password === defaultPassowrd) {
@@ -49,13 +49,13 @@ function authenticate(email: string, password: string): UserData {
     if (email === namespaceAdminEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['users'],
+            groups: ['runtimeNamespaceAdmin'],
         }
     }
     if (email === adminEmail && password === defaultPassowrd) {
         return {
             email: email,
-            groups: ['admins', 'developers', 'users'],
+            groups: [],
         }
     }
     return null as any;
