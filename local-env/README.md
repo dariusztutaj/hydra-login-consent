@@ -2,7 +2,7 @@
 
 1. Provision `minikube`:
 ```
-$ kyma provision minikube --vm-driver kvm2 --memory 8500 --cpus 8 
+kyma provision minikube --vm-driver kvm2 --memory 8500 --cpus 8 
 ```
 2. Install Kyma
 ```
@@ -37,10 +37,9 @@ curl --insecure https://oauth2.kyma.example.com/.well-known/openid-configuration
 ```
 kubectl -n istio-system get secrets kyma-gateway-certs -o jsonpath='{.data.tls\.crt}' | base64 -d > ./kyma-cert.crt
 ```
-and move it to minikube folder and restart minikube:
+and move it to minikube folder:
 ```
 mv ./kyma-cert.crt $HOME/.minikube/certs/
-minikube start --embed-certs=true
 ```
 after that the certificate can be find in `/usr/share/ca-certificates` and whey trying to access oauth endpoint from minikube does not throw an error.
 **Note**: Use the ingress gw IP from step 6.
@@ -51,7 +50,7 @@ minikube ssh "echo ${IP} oauth2.kyma.example.com kyma.example.com ory-hydra-logi
 
 10. Redeploy the cluster to use OIDC.
 
-Follow the documentation: https://minikube.sigs.k8s.io/docs/tutorials/openid_connect_auth/
+Detailed documentation: https://minikube.sigs.k8s.io/docs/tutorials/openid_connect_auth/
     
 - get the oidc client id:
 ```bash
@@ -62,6 +61,7 @@ OIDC_CLIENT_ID=$(kubectl -n kyma-system get secret testclient3 -o jsonpath='{.da
 minikube start --extra-config=apiserver.authorization-mode=RBAC \
 --extra-config=apiserver.oidc-issuer-url=https://oauth2.kyma.example.com/ \
 --extra-config=apiserver.oidc-username-claim=email \
+--extra-config=apiserver.oidc-groups-claim=groups \
 --extra-config=apiserver.oidc-client-id=${OIDC_CLIENT_ID} \
 --extra-config=apiserver.v=9 \
 --embed-certs=true
@@ -76,6 +76,14 @@ minikube start --extra-config=apiserver.authorization-mode=RBAC \
     ▪ apiserver.oidc-username-claim=email
     ▪ apiserver.oidc-client-id=25028367-4bda-4cc8-8d8c-9f0c4bf0d18f
 ```
+
+11. Running cluster user tests 
+Now the cluster should be ready to run tests. You can run it:
+ ```bash
+ cd $YOUR_KYMA_REPO_DIR/resources/cluster-users/files/
+ OIDC_PROVIDER=hydra bash  sar-test.sh
+ ```
+#### Troubleshooting:
 **NOTE**: After redeploy coredns tends to fail due to:
 ```log
 pkopec@piorts-nb hydra-login-consent/local-env (master *+) » k logs coredns-5644d7b6d9-275vl 
@@ -99,15 +107,13 @@ After that you can force coredns pod to restart:
 kubectl -n kube-system delete pod coredns-5644d7b6d9-275vl 
 ```
 
-### Getting the token
+### Getting the token manually using browser.
 Get the client_id:
 ```
 OIDC_CLIENT_ID=$(kubectl -n kyma-system get secret testclient3 -o jsonpath='{.data.client_id}' | base64 -d)
 ```
 Go to url:
 `firefox https://oauth2.kyma.example.com/oauth2/auth?client_id=${OIDC_CLIENT_ID}&response_type=id_token&scope=openid&redirect_uri=http://testclient3.example.com&state=dd3557bfb07ee1858f0ac8abc4a46aef&nonce=lubiesecurityskany`
-
-**TODO:** There is potential problem with jwt expiration if we don't provide refresh token. `response_type=code+id_token` should provide the refresh_token as well as the id_token. Update: this does not work: `unsupported_response_type&error_description=The+authorization+server+does+not+support+obtaining+a+token+using+this+method%0A%0AThe+client+is+not+allowed+to+request+response_type+"code+id_token".&error_hint=The+client+is+not+allowed+to+request+response_type+"code+id_token".&state=dd3557bfb07ee1858f0ac8abc4a46aef`
 
 After login, you get redirect to testclient3, which does not exist, but we need only JWT that is in the redirect URI. Save that for another step.
 ### Configure kubectl to work with OIDC
@@ -128,5 +134,3 @@ kubectl config set-credentials admin@kyma.cx \
    --auth-provider-arg=client-id=${OIDC_CLIENT_ID} \
    --auth-provider-arg=id-token=${TOKEN}
 ```
-
-**TODO**: resolve CSRF issues.
